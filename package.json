@@ -6,7 +6,7 @@
   "scripts": {},
   "repository": {
     "type": "git",
-    "url": "git://github.com/shaundon/hubot-standup-alarm.git"
+    "url": "git://github.com/hubot-scripts/hubot-standup-alarm.git"
   },
   "keywords": [
     "hubot",
@@ -20,9 +20,9 @@
   "author": "Shaun Donnelly <shaundonnelly@gmail.com>",
   "licence": "MIT",
   "bugs": {
-    "url": "https://github.com/shaundon/hubot-standup-alarm/issues"
+    "url": "https://github.com/hubot-scripts/hubot-standup-alarm/issues"
   },
-  "homepage": "https://github.com/shaundon/hubot-standup-alarm",
+  "homepage": "https://github.com/hubot-scripts/hubot-standup-alarm",
   "devDependencies": {},
   "license": "MIT"
 }
