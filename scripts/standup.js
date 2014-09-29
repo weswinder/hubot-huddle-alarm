@@ -93,7 +93,7 @@ module.exports = function(robot) {
 
     // Fires the standup message.
     function doStandup(room) {
-        var message = STANDUP_MESSAGES[Math.floor(Math.random()*STANDUP_MESSAGES.length)];
+        var message = _.sample(STANDUP_MESSAGES);
         robot.messageRoom(room, message);
     }
 
