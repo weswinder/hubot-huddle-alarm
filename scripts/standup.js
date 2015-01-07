@@ -26,7 +26,7 @@ module.exports = function(robot) {
     // Constants.
     var STANDUP_MESSAGES = [
         "Standup time!",
-        "Time for standup, you guys.",
+        "Time for standup, y'all.",
         "It's standup time once again!",
         "Get up, stand up (it's time for our standup)",
         "Standup time. Get up, humans",
