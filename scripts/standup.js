@@ -167,7 +167,7 @@ module.exports = function(robot) {
         // NOTE: This works for Hipchat. You may need to change this line to 
         // match your adapter. 'room' must be saved in a format that will
         // work with the robot.messageRoom function.
-        var room = msg.envelope.user.reply_to;
+        var room = msg.envelope.user.room;
 
         saveStandup(room, time);
         msg.send("Ok, from now on I'll remind this room to do a standup every weekday at " + time);
