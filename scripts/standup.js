@@ -174,11 +174,14 @@ module.exports = function(robot) {
     });
 
     robot.respond(/list standups$/i, function(msg) {
+        room = msg.envelope.user.room;
+        console.log("HAI");
         console.log(robot.adapter);
-        var standups = getStandupsForRoom(msg.envelope.user.room);
+        console.log(room);
+        var standups = getStandupsForRoom(room);
 
         if (standups.length === 0) {
-            msg.send("Well this is awkward. You haven't got any standups set :-/");
+            msg.send("Well this is awkward. You haven't got any standups set for" + room + " :-/");
         }
         else {
             var standupsText = [];
