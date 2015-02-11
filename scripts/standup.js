@@ -146,13 +146,13 @@ module.exports = function(robot) {
     }
 
     robot.respond(/delete all standups/i, function(msg) {
-        var standupsCleared = clearAllStandupsForRoom(msg.envelope.user.reply_to);
+        var standupsCleared = clearAllStandupsForRoom(msg.envelope.user.room);
         msg.send('Deleted ' + standupsCleared + ' standup' + (standupsCleared === 1 ? '' : 's') + '. No more standups for you.');
     });
 
     robot.respond(/delete ([0-5]?[0-9]:[0-5]?[0-9]) standup/i, function(msg) {
         var time = msg.match[1]
-        var standupsCleared = clearSpecificStandupForRoom(msg.envelope.user.reply_to, time);
+        var standupsCleared = clearSpecificStandupForRoom(msg.envelope.user.room, time);
         if (standupsCleared === 0) {
             msg.send("Nice try. You don't even have a standup at " + time);
         }
@@ -174,7 +174,8 @@ module.exports = function(robot) {
     });
 
     robot.respond(/list standups$/i, function(msg) {
-        var standups = getStandupsForRoom(msg.envelope.user.reply_to);
+        console.log(robot.adapter);
+        var standups = getStandupsForRoom(msg.envelope.user.room);
 
         if (standups.length === 0) {
             msg.send("Well this is awkward. You haven't got any standups set :-/");
