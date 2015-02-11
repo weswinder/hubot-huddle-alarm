@@ -146,13 +146,23 @@ module.exports = function(robot) {
     }
 
     robot.respond(/delete all standups/i, function(msg) {
-        var standupsCleared = clearAllStandupsForRoom(msg.envelope.user.room);
+        if(robot.adapterName == 'slack') {
+            var room = msg.envelope.user.room;
+        } else {
+            var room = msg.envelope.user.reply_to;
+        }
+        var standupsCleared = clearAllStandupsForRoom(room);
         msg.send('Deleted ' + standupsCleared + ' standup' + (standupsCleared === 1 ? '' : 's') + '. No more standups for you.');
     });
 
     robot.respond(/delete ([0-5]?[0-9]:[0-5]?[0-9]) standup/i, function(msg) {
         var time = msg.match[1]
-        var standupsCleared = clearSpecificStandupForRoom(msg.envelope.user.room, time);
+        if(robot.adapterName == 'slack') {
+            var room = msg.envelope.user.room;
+        } else {
+            var room = msg.envelope.user.reply_to;
+        }
+        var standupsCleared = clearSpecificStandupForRoom(room, time);
         if (standupsCleared === 0) {
             msg.send("Nice try. You don't even have a standup at " + time);
         }
@@ -167,21 +177,26 @@ module.exports = function(robot) {
         // NOTE: This works for Hipchat. You may need to change this line to 
         // match your adapter. 'room' must be saved in a format that will
         // work with the robot.messageRoom function.
-        var room = msg.envelope.user.room;
+        if(robot.adapterName == 'slack') {
+            var room = msg.envelope.user.room;
+        } else {
+            var room = msg.envelope.user.reply_to;
+        }
 
         saveStandup(room, time);
         msg.send("Ok, from now on I'll remind this room to do a standup every weekday at " + time);
     });
 
     robot.respond(/list standups$/i, function(msg) {
-        room = msg.envelope.user.room;
-        console.log("HAI");
-        console.log(robot.adapter);
-        console.log(room);
+        if(robot.adapterName == 'slack') {
+            var room = msg.envelope.user.room;
+        } else {
+            var room = msg.envelope.user.reply_to;
+        }
         var standups = getStandupsForRoom(room);
 
         if (standups.length === 0) {
-            msg.send("Well this is awkward. You haven't got any standups set for" + room + " :-/");
+            msg.send("Well this is awkward. You haven't got any standups set :-/");
         }
         else {
             var standupsText = [];
