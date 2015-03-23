@@ -38,7 +38,7 @@ module.exports = function(robot) {
     
     var PREPEND_MESSAGE = process.env.HUBOT_STANDUP_PREPEND || "";
     if (PREPEND_MESSAGE.length > 0 && PREPEND_MESSAGE.slice(-1) !== ' ') {
-        PREPEND_MESSAGE += '';
+        PREPEND_MESSAGE += ' ';
     }
 
     // Check for standups that need to be fired, once a minute
