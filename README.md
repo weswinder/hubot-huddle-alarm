@@ -23,6 +23,10 @@ You can create as many standups as you like, across as many rooms as you like.
 
 `hubot delete all standups` - Deletes all standups for this room.
 
+## Environment Variables
+
+You can set ```HUBOT_STANDUP_PREPEND``` to define a string that will be prepended to the alert messages Hubot sends. Typically, you'd use this to trigger an alert to everybody, for example, *@here* will alert everybody active in a Hipchat room, and *@all* does the same for Flowdock.
+
 ## Caveats
 
 Currently, the time you specify must be the same timezone as the server Hubot resides on. You can check this with `hubot time`.
