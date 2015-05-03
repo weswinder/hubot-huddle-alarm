@@ -21,10 +21,12 @@
 //   underscore
 //   cron
 
+/*jslint node: true*/
 var cronJob = require('cron').CronJob;
 var _ = require('underscore');
 
 module.exports = function(robot) {
+	'use strict';
 
     // Constants.
     var STANDUP_MESSAGES = [
@@ -35,7 +37,7 @@ module.exports = function(robot) {
         "Standup time. Get up, humans",
         "Standup time! Now! Go go go!"
     ];
-    
+
     var PREPEND_MESSAGE = process.env.HUBOT_STANDUP_PREPEND || "";
     if (PREPEND_MESSAGE.length > 0 && PREPEND_MESSAGE.slice(-1) !== ' ') {
         PREPEND_MESSAGE += ' ';
@@ -43,9 +45,9 @@ module.exports = function(robot) {
 
     // Check for standups that need to be fired, once a minute
     // Monday to Friday.
-    var standupClock = new cronJob('1 * * * * 1-5', function() {
+	(new cronJob('1 * * * * 1-5', function() {
         checkStandups();
-    }, null, true);
+    }, null, true));
 
     // Compares current time to the time of the standup
     // to see if it should be fired.
@@ -65,7 +67,7 @@ module.exports = function(robot) {
             return false;
         }
 
-        if (standupHours == currentHours && standupMinutes == currentMinutes) {
+        if (standupHours === currentHours && standupMinutes === currentMinutes) {
             return true;
         }
         return false;
@@ -81,7 +83,7 @@ module.exports = function(robot) {
         var allStandups = getStandups();
         var standupsForRoom = [];
         _.each(allStandups, function(standup) {
-            if (standup.room == room) {
+            if (standup.room === room) {
                 standupsForRoom.push(standup);
             }
         });
@@ -108,7 +110,7 @@ module.exports = function(robot) {
     // Finds the room for most adaptors
     function findRoom(msg) {
         var room = msg.envelope.room;
-        if(room == undefined) {
+        if(typeof room === 'undefined') {
             room = msg.envelope.user.reply_to;
         }
         return room;
@@ -135,7 +137,7 @@ module.exports = function(robot) {
         var standupsToKeep = [];
         var standupsRemoved = 0;
         _.each(standups, function(standup) {
-           if (standup.room != room) {
+           if (standup.room !== room) {
                standupsToKeep.push(standup);
            }
            else {
@@ -151,7 +153,7 @@ module.exports = function(robot) {
         var standupsToKeep = [];
         var standupsRemoved = 0;
         _.each(standups, function(standup) {
-            if (standup.room == room && standup.time == time) {
+            if (standup.room === room && standup.time === time) {
                 standupsRemoved++;
             }
             else {
@@ -168,7 +170,7 @@ module.exports = function(robot) {
     });
 
     robot.respond(/delete ([0-5]?[0-9]:[0-5]?[0-9]) standup/i, function(msg) {
-        var time = msg.match[1]
+        var time = msg.match[1];
         var standupsCleared = clearSpecificStandupForRoom(findRoom(msg), time);
         if (standupsCleared === 0) {
             msg.send("Nice try. You don't even have a standup at " + time);
