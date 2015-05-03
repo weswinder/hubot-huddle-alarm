@@ -180,7 +180,7 @@ module.exports = function(robot) {
         }
     });
 
-    robot.respond(/create standup ([0-5]?[0-9]:[0-5]?[0-9])$/i, function(msg) {
+    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])$/, function(msg) {
         var time = msg.match[1];
 
         var room = findRoom(msg);
