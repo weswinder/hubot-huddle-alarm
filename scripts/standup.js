@@ -12,6 +12,7 @@
 // Commands:
 //   hubot standup help - See a help document explaining how to use.
 //   hubot create standup hh:mm - Creates a standup at hh:mm every weekday for this room
+//   hubot create standup hh:mm UTC+2 - Creates a standup at hh:mm every weekday for this room (relative to UTC)
 //   hubot list standups - See all standups for this room
 //   hubot list standups in every room - See all standups in every room
 //   hubot delete hh:mm standup - If you have a standup at hh:mm, deletes it
@@ -26,7 +27,7 @@ var cronJob = require('cron').CronJob;
 var _ = require('underscore');
 
 module.exports = function(robot) {
-	'use strict';
+    'use strict';
 
     // Constants.
     var STANDUP_MESSAGES = [
@@ -45,23 +46,32 @@ module.exports = function(robot) {
 
     // Check for standups that need to be fired, once a minute
     // Monday to Friday.
-	(new cronJob('1 * * * * 1-5', function() {
+    (new cronJob('1 * * * * 1-5', function() {
         checkStandups();
     }, null, true));
 
     // Compares current time to the time of the standup
     // to see if it should be fired.
-    function standupShouldFire(standupTime) {
+    function standupShouldFire(standupTime, utc) {
         var now = new Date();
-        var currentHours = now.getHours();
-        var currentMinutes = now.getMinutes();
+
+        var currentHours, currentMinutes;
+
+        if (utc) {
+            currentHours = now.getUTCHours() + parseInt(utc, 10);
+            currentMinutes = now.getUTCMinutes();
+        }
+        else {
+            currentHours = now.getHours();
+            currentMinutes = now.getMinutes();
+        }
 
         var standupHours = standupTime.split(':')[0];
         var standupMinutes = standupTime.split(':')[1];
 
         try {
-            standupHours = parseInt(standupHours);
-            standupMinutes = parseInt(standupMinutes);
+            standupHours = parseInt(standupHours, 10);
+            standupMinutes = parseInt(standupMinutes, 10);
         }
         catch (_error) {
             return false;
@@ -95,7 +105,7 @@ module.exports = function(robot) {
         var standups = getStandups();
 
         _.each(standups, function(standup) {
-            if (standupShouldFire(standup.time)) {
+            if (standupShouldFire(standup.time, standup.utc)) {
                 doStandup(standup.room);
             }
         });
@@ -117,12 +127,15 @@ module.exports = function(robot) {
     }
 
     // Stores a standup in the brain.
-    function saveStandup(room, time) {
+    function saveStandup(room, time, utc) {
         var standups = getStandups();
+
         var newStandup = {
             time: time,
-            room: room
+            room: room,
+            utc: utc
         };
+
         standups.push(newStandup);
         updateBrain(standups);
     }
@@ -180,13 +193,23 @@ module.exports = function(robot) {
         }
     });
 
-    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])$/, function(msg) {
+    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])$/i, function(msg) {
         var time = msg.match[1];
 
         var room = findRoom(msg);
 
         saveStandup(room, time);
         msg.send("Ok, from now on I'll remind this room to do a standup every weekday at " + time);
+    });
+
+    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-][0-9])$/i, function(msg) {
+        var time = msg.match[1];
+        var utc = msg.match[2];
+
+        var room = findRoom(msg);
+
+        saveStandup(room, time, utc);
+        msg.send("Ok, from now on I'll remind this room to do a standup every weekday at " + time + " UTC" + utc);
     });
 
     robot.respond(/list standups$/i, function(msg) {
@@ -199,7 +222,11 @@ module.exports = function(robot) {
             var standupsText = [];
             standupsText.push("Here's your standups:");
             _.each(standups, function (standup) {
-                standupsText.push(standup.time);
+                if (standup.utc) {
+                    standupsText.push(standup.time + " UTC" + standup.utc);
+                } else {
+                    standupsText.push(standup.time);
+                }
             });
             msg.send(standupsText.join('\n'));
         }
@@ -226,6 +253,7 @@ module.exports = function(robot) {
         message.push("Use me to create a standup, and then I'll post in this room every weekday at the time you specify. Here's how:");
         message.push("");
         message.push(robot.name + " create standup hh:mm - I'll remind you to standup in this room at hh:mm every weekday.");
+        message.push(robot.name + " create standup hh:mm UTC+2 - I'll remind you to standup in this room at hh:mm every weekday.");
         message.push(robot.name + " list standups - See all standups for this room.");
         message.push(robot.name + " list standups in every room - Be nosey and see when other rooms have their standup.");
         message.push(robot.name + " delete hh:mm standup - If you have a standup at hh:mm, I'll delete it.");
