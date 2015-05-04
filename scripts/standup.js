@@ -23,11 +23,11 @@
 //   cron
 
 /*jslint node: true*/
-var cronJob = require('cron').CronJob;
-var _ = require('underscore');
+var cronJob = require("cron").CronJob;
+var _ = require("underscore");
 
 module.exports = function(robot) {
-    'use strict';
+    "use strict";
 
     // Constants.
     var STANDUP_MESSAGES = [
@@ -40,19 +40,20 @@ module.exports = function(robot) {
     ];
 
     var PREPEND_MESSAGE = process.env.HUBOT_STANDUP_PREPEND || "";
-    if (PREPEND_MESSAGE.length > 0 && PREPEND_MESSAGE.slice(-1) !== ' ') {
-        PREPEND_MESSAGE += ' ';
+    if (PREPEND_MESSAGE.length > 0 && PREPEND_MESSAGE.slice(-1) !== " ") {
+        PREPEND_MESSAGE += " ";
     }
 
     // Check for standups that need to be fired, once a minute
     // Monday to Friday.
-    (new cronJob('1 * * * * 1-5', function() {
-        checkStandups();
-    }, null, true));
+    (new cronJob("1 * * * * 1-5", checkStandups, null, true));
 
     // Compares current time to the time of the standup
     // to see if it should be fired.
-    function standupShouldFire(standupTime, utc) {
+    function standupShouldFire(standup) {
+        var standupTime = standup.time,
+            utc = standup.utc;
+
         var now = new Date();
 
         var currentHours, currentMinutes;
@@ -67,7 +68,7 @@ module.exports = function(robot) {
         }
 
         var standupHours = standupTime.split(':')[0];
-        var standupMinutes = standupTime.split(':')[1];
+        var standupMinutes = standupTime.split(":")[1];
 
         try {
             standupHours = parseInt(standupHours, 10);
@@ -85,30 +86,19 @@ module.exports = function(robot) {
 
     // Returns all standups.
     function getStandups() {
-        return robot.brain.get('standups') || [];
+        return robot.brain.get("standups") || [];
     }
 
     // Returns just standups for a given room.
     function getStandupsForRoom(room) {
-        var allStandups = getStandups();
-        var standupsForRoom = [];
-        _.each(allStandups, function(standup) {
-            if (standup.room === room) {
-                standupsForRoom.push(standup);
-            }
-        });
-        return standupsForRoom;
+        return _.where(getStandups(), {room: room});
     }
 
     // Gets all standups, fires ones that should be.
     function checkStandups() {
         var standups = getStandups();
 
-        _.each(standups, function(standup) {
-            if (standupShouldFire(standup.time, standup.utc)) {
-                doStandup(standup.room);
-            }
-        });
+        _.chain(standups).filter(standupShouldFire).pluck("room").each(doStandup);
     }
 
     // Fires the standup message.
@@ -120,9 +110,11 @@ module.exports = function(robot) {
     // Finds the room for most adaptors
     function findRoom(msg) {
         var room = msg.envelope.room;
-        if(typeof room === 'undefined') {
+
+        if(_.isUndefined(room)) {
             room = msg.envelope.user.reply_to;
         }
+
         return room;
     }
 
@@ -142,44 +134,30 @@ module.exports = function(robot) {
 
     // Updates the brain's standup knowledge.
     function updateBrain(standups) {
-        robot.brain.set('standups', standups);
+        robot.brain.set("standups", standups);
     }
 
     function clearAllStandupsForRoom(room) {
         var standups = getStandups();
-        var standupsToKeep = [];
-        var standupsRemoved = 0;
-        _.each(standups, function(standup) {
-           if (standup.room !== room) {
-               standupsToKeep.push(standup);
-           }
-           else {
-               standupsRemoved++;
-           }
-        });
+
+        var standupsToKeep = _.reject(standups, {room: room});
+
         updateBrain(standupsToKeep);
-        return standupsRemoved;
+        return standups.length - standupsToKeep.length;
     }
 
     function clearSpecificStandupForRoom(room, time) {
         var standups = getStandups();
-        var standupsToKeep = [];
-        var standupsRemoved = 0;
-        _.each(standups, function(standup) {
-            if (standup.room === room && standup.time === time) {
-                standupsRemoved++;
-            }
-            else {
-                standupsToKeep.push(standup);
-            }
-        });
+        var standupsToKeep = _.reject(standups, {room: room, time: time});
+
         updateBrain(standupsToKeep);
-        return standupsRemoved;
+
+        return standups.length - standupsToKeep.length;
     }
 
     robot.respond(/delete all standups/i, function(msg) {
         var standupsCleared = clearAllStandupsForRoom(findRoom(msg));
-        msg.send('Deleted ' + standupsCleared + ' standup' + (standupsCleared === 1 ? '' : 's') + '. No more standups for you.');
+        msg.send("Deleted " + standupsCleared + " standup" + (standupsCleared === 1 ? "" : "s") + ". No more standups for you.");
     });
 
     robot.respond(/delete ([0-5]?[0-9]:[0-5]?[0-9]) standup/i, function(msg) {
@@ -219,16 +197,15 @@ module.exports = function(robot) {
             msg.send("Well this is awkward. You haven't got any standups set :-/");
         }
         else {
-            var standupsText = [];
-            standupsText.push("Here's your standups:");
-            _.each(standups, function (standup) {
+            var standupsText = ["Here's your standups:"].concat(_.map(standups, function (standup) {
                 if (standup.utc) {
-                    standupsText.push(standup.time + " UTC" + standup.utc);
+                    return standup.time + " UTC" + standup.utc;
                 } else {
-                    standupsText.push(standup.time);
+                    return standup.time;
                 }
-            });
-            msg.send(standupsText.join('\n'));
+            }));
+
+            msg.send(standupsText.join("\n"));
         }
     });
 
@@ -238,12 +215,11 @@ module.exports = function(robot) {
             msg.send("No, because there aren't any.");
         }
         else {
-            var standupsText = [];
-            standupsText.push("Here's the standups for every room:");
-            _.each(standups, function (standup) {
-                standupsText.push('Room: ' + standup.room + ', Time: ' + standup.time);
-            });
-            msg.send(standupsText.join('\n'));
+            var standupsText = ["Here's the standups for every room:"].concat(_.map(standups, function (standup) {
+                return "Room: " + standup.room + ", Time: " + standup.time;
+            }));
+
+            msg.send(standupsText.join("\n"));
         }
     });
 
@@ -258,6 +234,6 @@ module.exports = function(robot) {
         message.push(robot.name + " list standups in every room - Be nosey and see when other rooms have their standup.");
         message.push(robot.name + " delete hh:mm standup - If you have a standup at hh:mm, I'll delete it.");
         message.push(robot.name + " delete all standups - Deletes all standups for this room.");
-        msg.send(message.join('\n'));
+        msg.send(message.join("\n"));
     });
 };
