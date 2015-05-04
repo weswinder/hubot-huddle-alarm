@@ -61,6 +61,11 @@ module.exports = function(robot) {
         if (utc) {
             currentHours = now.getUTCHours() + parseInt(utc, 10);
             currentMinutes = now.getUTCMinutes();
+
+            if (currentHours > 23) {
+                currentHours -= 23;
+            }
+
         }
         else {
             currentHours = now.getHours();
