@@ -15,7 +15,7 @@
   ],
   "dependencies": {
     "cron": "~1.0.4",
-    "underscore": "~1.6.0"
+    "underscore": "~1.8.3"
   },
   "author": "Shaun Donnelly <shaundonnelly@gmail.com>",
   "licence": "MIT",
