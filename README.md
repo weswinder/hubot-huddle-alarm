@@ -1,6 +1,8 @@
 hubot-standup-alarm
 ===================
 
+[![npm version](https://badge.fury.io/js/hubot-standup-alarm.svg)](http://badge.fury.io/js/hubot-standup-alarm)
+
 Use Hubot to remind your team to do your standups.
 
 ## What does it do?
