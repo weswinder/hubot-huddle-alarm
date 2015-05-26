@@ -15,7 +15,9 @@ You can create as many standups as you like, across as many rooms as you like.
 
 `hubot standup help` - See a help document explaining how to use.
 
-`hubot create standup hh:mm` - Creates a standup at hh:mm every weekday for this room
+`hubot create standup hh:mm` - Creates a standup at hh:mm (UTC) every weekday for this room
+
+`hubot create standup hh:mm UTC+2` - As above, with a shift to account for UTC offset
 
 `hubot list standups` - See all standups for this room
 
@@ -29,11 +31,9 @@ You can create as many standups as you like, across as many rooms as you like.
 
 You can set ```HUBOT_STANDUP_PREPEND``` to define a string that will be prepended to the alert messages Hubot sends. Typically, you'd use this to trigger an alert to everybody, for example, *@here* will alert everybody active in a Hipchat room, and *@all* does the same for Flowdock.
 
-## Caveats
+## Local Time
 
-Currently, the time you specify must be the same timezone as the server Hubot resides on. You can check this with `hubot time`.
-
-Standup reminders are sent using `robot.messageRoom`. Therefore, the room name needs to be saved correctly when a standup reminder is created. This was originally written for Hipchat, which retrieves the room from a message using `msg.envelope.user.reply_to`. You might need to change this if you're using a different adapter. You can find that part of the code around line 170, inside the `create standup` comand.
+Currently, the time you specify must be the same timezone as the server Hubot resides on. You can check this with `hubot time`. However, you can specify a UTC offset to compensate for any differences between Hubot's time and your local time.
 
 ## Installation via NPM
 
