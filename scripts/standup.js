@@ -185,7 +185,7 @@ module.exports = function(robot) {
         msg.send("Ok, from now on I'll remind this room to do a standup every weekday at " + time);
     });
 
-    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-][0-9])$/i, function(msg) {
+    robot.respond(/create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-]([0-9]|1[0-3]))$/i, function(msg) {
         var time = msg.match[1];
         var utc = msg.match[2];
 
