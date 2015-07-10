@@ -4,7 +4,6 @@
 //
 //   This is configured to work for Hipchat. You may need to change the 'create standup' command
 //   to match the adapter you're using.
-
 //
 // Configuration:
 //  HUBOT_STANDUP_PREPEND
