@@ -80,7 +80,6 @@ module.exports = (robot) ->
     return
 
   # Finds the room for most adaptors
-
   findRoom = (msg) ->
     room = msg.envelope.room
     if _.isUndefined(room)
@@ -132,10 +131,17 @@ module.exports = (robot) ->
   PREPEND_MESSAGE = process.env.HUBOT_STANDUP_PREPEND or ''
   if PREPEND_MESSAGE.length > 0 and PREPEND_MESSAGE.slice(-1) != ' '
     PREPEND_MESSAGE += ' '
+
   # Check for standups that need to be fired, once a minute
   # Monday to Friday.
   new cronJob('1 * * * * 1-5', checkStandups, null, true)
-  robot.respond /delete all standups/i, (msg) ->
+
+  robot.respond /delete all standups for (.+)$/i, (msg) ->
+    room = msg.match[1]
+    standupsCleared = clearAllStandupsForRoom(room)
+    msg.send 'Deleted ' + standupsCleared + ' standups for ' + room
+
+  robot.respond /delete all standups$/i, (msg) ->
     standupsCleared = clearAllStandupsForRoom(findRoom(msg))
     msg.send 'Deleted ' + standupsCleared + ' standup' + (if standupsCleared == 1 then '' else 's') + '. No more standups for you.'
     return
