@@ -1,6 +1,6 @@
 {
   "name": "hubot-standup-alarm",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Hubot script to remind teams to do their standups.",
   "main": "index.js",
   "scripts": {},
