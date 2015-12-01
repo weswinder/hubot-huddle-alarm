@@ -75,7 +75,13 @@ module.exports = (robot) ->
   # Fires the standup message.
 
   doStandup = (room) ->
-    message = PREPEND_MESSAGE + _.sample(STANDUP_MESSAGES)
+    standups = getStandupsForRoom(room)
+    if standups.length > 0
+      #do some magic here to loop through the standups and find the one for right now
+      theStandup = standups.filter(standupShouldFire)
+      message = "#{PREPEND_MESSAGE} #{_.sample(STANDUP_MESSAGES)} #{theStandup[0].location}"
+    else
+      message = "#{PREPEND_MESSAGE} #{_.sample(STANDUP_MESSAGES)} #{standups[0].location}"
     robot.messageRoom room, message
     return
 
@@ -88,12 +94,13 @@ module.exports = (robot) ->
 
   # Stores a standup in the brain.
 
-  saveStandup = (room, time, utc) ->
+  saveStandup = (room, time, location, utc) ->
     standups = getStandups()
-    newStandup = 
+    newStandup =
       time: time
       room: room
       utc: utc
+      location: location
     standups.push newStandup
     updateBrain standups
     return
@@ -159,6 +166,15 @@ module.exports = (robot) ->
     saveStandup room, time
     msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time
     return
+
+  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) (?:at|\@)(.*$)/i, (msg) ->
+    time = msg.match[1]
+    location = msg.match[2]
+    room = findRoom(msg)
+    saveStandup room, time, location
+    msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time
+    return
+
   robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-]([0-9]|1[0-3]))$/i, (msg) ->
     time = msg.match[1]
     utc = msg.match[2]
@@ -166,7 +182,17 @@ module.exports = (robot) ->
     saveStandup room, time, utc
     msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time + ' UTC' + utc
     return
-  robot.respond /list standups$/i, (msg) ->
+
+  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-]([0-9]|1[0-3])) (?:at|\@)(.*$)/i, (msg) ->
+    time = msg.match[1]
+    utc = msg.match[2]
+    location= msg.match[3]
+    room = findRoom(msg)
+    saveStandup room, time, location, utc
+    msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time + ' UTC' + utc
+    return
+
+  robot.respond /(?:list|show) standups$/i, (msg) ->
     standups = getStandupsForRoom(findRoom(msg))
     if standups.length == 0
       msg.send 'Well this is awkward. You haven\'t got any standups set :-/'
@@ -179,7 +205,7 @@ module.exports = (robot) ->
       ))
       msg.send standupsText.join('\n')
     return
-  robot.respond /list standups in every room/i, (msg) ->
+  robot.respond /(?:list|show) standups (?:for|in) every room/i, (msg) ->
     standups = getStandups()
     if standups.length == 0
       msg.send 'No, because there aren\'t any.'
