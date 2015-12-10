@@ -23,6 +23,9 @@
     "url": "https://github.com/hubot-scripts/hubot-standup-alarm/issues"
   },
   "homepage": "https://github.com/hubot-scripts/hubot-standup-alarm",
-  "devDependencies": {},
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-release": "^0.13.0"
+  },
   "license": "MIT"
 }
