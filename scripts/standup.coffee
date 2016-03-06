@@ -11,10 +11,11 @@
 # Commands:
 #   hubot standup help - See a help document explaining how to use.
 #   hubot create standup hh:mm - Creates a standup at hh:mm every weekday for this room
+#   hubot create standup Monday@hh:mm - Creates a standup at hh:mm every Monday for this room
 #   hubot create standup hh:mm UTC+2 - Creates a standup at hh:mm every weekday for this room (relative to UTC)
 #   hubot list standups - See all standups for this room
 #   hubot list standups in every room - See all standups in every room
-#   hubot delete hh:mm standup - If you have a standup at hh:mm, deletes it
+#   hubot delete Monday@hh:mm standup - If you have a standup on Monday at hh:mm, deletes it
 #   hubot delete all standups - Deletes all standups for this room.
 #
 # Dependencies:
@@ -36,24 +37,35 @@ module.exports = (robot) ->
     now = new Date
     currentHours = undefined
     currentMinutes = undefined
+    currentWeekday = undefined
     if utc
       currentHours = now.getUTCHours() + parseInt(utc, 10)
       currentMinutes = now.getUTCMinutes()
+      currentMinutes = now.getUTCDay()
       if currentHours > 23
         currentHours -= 23
     else
       currentHours = now.getHours()
       currentMinutes = now.getMinutes()
+      currentWeekday = now.getDay()
     standupHours = standupTime.split(':')[0]
     standupMinutes = standupTime.split(':')[1]
+    standupDay = standupTime.split("@")[0]
     try
       standupHours = parseInt(standupHours, 10)
       standupMinutes = parseInt(standupMinutes, 10)
+      standupDay = getDayOfWeek(standupDay)
     catch _error
       return false
-    if standupHours == currentHours and standupMinutes == currentMinutes
+    if standupHours == currentHours and standupMinutes == currentMinutes and standupDay and standupDay == currentWeekday
       return true
     false
+
+  # Returns the number of a day of the week from a supplied string. Will only attempt to match the first 3 characters
+
+  getDayOfWeek = (day) ->
+    days = ['sun', 'mon', 'tue', 'Wed', 'thu', 'fri', 'sat']
+    return days.indexOf(day.toLowercase().substring(0,3))
 
   # Returns all standups.
 
@@ -101,6 +113,7 @@ module.exports = (robot) ->
       room: room
       utc: utc
       location: location
+      day: day
     standups.push newStandup
     updateBrain standups
     return
@@ -160,36 +173,16 @@ module.exports = (robot) ->
     else
       msg.send 'Deleted your ' + time + ' standup.'
     return
-  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])$/i, (msg) ->
-    time = msg.match[1]
+
+  robot.respond /create standup (?:([A-z]*)\s?\@\s?)?((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])(?: UTC\+(\d\d?))?(?: in)?(.*$)/i, (msg) ->
+    day = msg.match[1]
+    time = msg.match[2]
+    utcOffset = msg.match[3]
+    location = msg.match[4]
     room = findRoom(msg)
-    saveStandup room, time
+    saveStandup room, day, time, utcOffset, location
+    /** TODO Continue from here. **/
     msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time
-    return
-
-  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) (?:at|\@)(.*$)/i, (msg) ->
-    time = msg.match[1]
-    location = msg.match[2]
-    room = findRoom(msg)
-    saveStandup room, time, location
-    msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time
-    return
-
-  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-]([0-9]|1[0-3]))$/i, (msg) ->
-    time = msg.match[1]
-    utc = msg.match[2]
-    room = findRoom(msg)
-    saveStandup room, time, utc
-    msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time + ' UTC' + utc
-    return
-
-  robot.respond /create standup ((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9]) UTC([+-]([0-9]|1[0-3])) (?:at|\@)(.*$)/i, (msg) ->
-    time = msg.match[1]
-    utc = msg.match[2]
-    location= msg.match[3]
-    room = findRoom(msg)
-    saveStandup room, time, location, utc
-    msg.send 'Ok, from now on I\'ll remind this room to do a standup every weekday at ' + time + ' UTC' + utc
     return
 
   robot.respond /(?:list|show) standups$/i, (msg) ->

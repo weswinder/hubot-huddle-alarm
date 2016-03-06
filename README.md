@@ -19,11 +19,15 @@ You can create as many standups as you like, across as many rooms as you like.
 
 `hubot create standup hh:mm UTC+2` - As above, with a shift to account for UTC offset
 
+`hubot create standup Monday@hh:mm` - Creates a standup at hh:mm (UTC) every Monday for this room
+
 `hubot list standups` - See all standups for this room
 
 `hubot list standups in every room` - See all standups in every room
 
 `hubot delete hh:mm standup` - If you have a standup at hh:mm, deletes it
+
+`hubot delete Monday@hh:mm standup` - If you have a standup on Monday at hh:mm, deletes it
 
 `hubot delete all standups` - Deletes all standups for this room.
 
