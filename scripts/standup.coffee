@@ -32,37 +32,43 @@ module.exports = (robot) ->
   # Compares current time to the time of the standup to see if it should be fired.
   standupShouldFire = (standup) ->
     standupTime = standup.time
+    standupDayOfWeek = standup.dayOfWeek
     utc = standup.utc
     now = new Date
+
     currentHours = undefined
     currentMinutes = undefined
     currentWeekday = undefined
     if utc
+      currentUTC = now.getUTC
       currentHours = now.getUTCHours() + parseInt(utc, 10)
       currentMinutes = now.getUTCMinutes()
-      currentMinutes = now.getUTCDay()
       if currentHours > 23
         currentHours -= 23
+      currentWeekday = now.getUTCDay()
     else
       currentHours = now.getHours()
       currentMinutes = now.getMinutes()
       currentWeekday = now.getDay()
+
     standupHours = standupTime.split(':')[0]
     standupMinutes = standupTime.split(':')[1]
-    standupDay = standupTime.split("@")[0]
     try
       standupHours = parseInt(standupHours, 10)
       standupMinutes = parseInt(standupMinutes, 10)
-      standupDay = getDayOfWeek(standupDay)
+      standupDayOfWeek = getDayOfWeek(standupDayOfWeek)
     catch _error
       return false
-    if standupHours == currentHours and standupMinutes == currentMinutes and standupDay and standupDay == currentWeekday
+
+    if standupHours == currentHours and standupMinutes == currentMinutes and (standupDayOfWeek == -1 or standupDayOfWeek == currentWeekday)
       return true
     false
 
   # Returns the number of a day of the week from a supplied string. Will only attempt to match the first 3 characters
   getDayOfWeek = (day) ->
-    days = ['sun', 'mon', 'tue', 'Wed', 'thu', 'fri', 'sat']
+    if (!day)
+      return -1;
+    days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat']
     days.indexOf(day.toLowerCase().substring(0,3))
 
   # Returns all standups.
@@ -164,7 +170,12 @@ module.exports = (robot) ->
       msg.send 'Well this is awkward. You haven\'t got any standups set :-/'
     else
       standupsText = [ 'Here\'s your standups:' ].concat(_.map(standups, (standup) ->
-        'Time: ' + standup.time + (if standup.utc then ' UTC+'+ standup.utc else '') + ', Location: '+ standup.location
+        text =  'Time: ' + standup.time
+        if standup.utc
+          text += ' UTC+' + standup.utc
+        if standup.location
+          text +=', Location: '+ standup.location
+        text
       ))
       msg.send standupsText.join('\n')
     return
@@ -175,7 +186,12 @@ module.exports = (robot) ->
       msg.send 'No, because there aren\'t any.'
     else
       standupsText = [ 'Here\'s the standups for every room:' ].concat(_.map(standups, (standup) ->
-        'Room: ' + standup.room + ', Time: ' + standup.time + (if standup.utc then ' UTC+'+ standup.utc else '') + ', Location: '+ standup.location
+        text =  'Room: ' + standup.room + ', Time: ' + standup.time
+        if standup.utc
+          text += ' UTC+' + standup.utc
+        if standup.location
+          text +=', Location: '+ standup.location
+        text
       ))
       msg.send standupsText.join('\n')
     return
