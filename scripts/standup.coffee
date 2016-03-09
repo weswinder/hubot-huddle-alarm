@@ -13,9 +13,10 @@
 #   hubot create standup hh:mm - Creates a standup at hh:mm every weekday for this room
 #   hubot create standup Monday@hh:mm - Creates a standup at hh:mm every Monday for this room
 #   hubot create standup hh:mm UTC+2 - Creates a standup at hh:mm every weekday for this room (relative to UTC)
+#   hubot create standup Monday@hh:mm UTC+2 - Creates a standup at hh:mm every Monday for this room (relative to UTC)
 #   hubot list standups - See all standups for this room
-#   hubot list standups in every room - See all standups in every room
-#   hubot delete Monday@hh:mm standup - If you have a standup on Monday at hh:mm, deletes it
+#   hubot list all standups - See all standups in every room
+#   hubot delete standup hh:mm - If you have a standup on weekdays at hh:mm, delete it. Can also supply a weekday and/or UTC offset
 #   hubot delete all standups - Deletes all standups for this room.
 #
 # Dependencies:
@@ -105,7 +106,7 @@ module.exports = (robot) ->
       dayOfWeek: dayOfWeek
       time: time
       utc: utcOffset
-      location: location
+      location: location.trim()
     standups.push newStandup
     updateBrain standups
     displayDate = dayOfWeek || 'weekday'
@@ -143,14 +144,15 @@ module.exports = (robot) ->
   # Responsd to the help command
   sendHelp = (msg) ->
     message = []
-    message.push 'I can remind you to do your daily standup!'
-    message.push 'Use me to create a standup, and then I\'ll post in this room every weekday at the time you specify. Here\'s how:'
+    message.push 'I can remind you to do your standups!'
+    message.push 'Use me to create a standup, and then I\'ll post in this room at the times you specify. Here\'s how:'
     message.push ''
     message.push robot.name + ' create standup hh:mm - I\'ll remind you to standup in this room at hh:mm every weekday.'
-    message.push robot.name + ' create standup hh:mm UTC+2 - I\'ll remind you to standup in this room at hh:mm every weekday.'
+    message.push robot.name + ' create standup hh:mm UTC+2 - I\'ll remind you to standup in this room at hh:mm UTC+2 every weekday.'
+    message.push robot.name + ' create standup Monday@hh:mm UTC+2 - I\'ll remind you to standup in this room at hh:mm UTC+2 every Monday.'
     message.push robot.name + ' list standups - See all standups for this room.'
-    message.push robot.name + ' list standups in every room - Be nosey and see when other rooms have their standup.'
-    message.push robot.name + ' delete hh:mm standup - If you have a standup at hh:mm, I\'ll delete it.'
+    message.push robot.name + ' list all standups- Be nosey and see when other rooms have their standup.'
+    message.push robot.name + ' delete standup hh:mm - If you have a standup at hh:mm, I\'ll delete it.'
     message.push robot.name + ' delete all standups - Deletes all standups for this room.'
     msg.send message.join('\n')
     return
@@ -162,10 +164,7 @@ module.exports = (robot) ->
       msg.send 'Well this is awkward. You haven\'t got any standups set :-/'
     else
       standupsText = [ 'Here\'s your standups:' ].concat(_.map(standups, (standup) ->
-        if standup.utc
-          standup.time + ' UTC' + standup.utc
-        else
-          standup.time
+        'Time: ' + standup.time + (if standup.utc then ' UTC+'+ standup.utc else '') + ', Location: '+ standup.location
       ))
       msg.send standupsText.join('\n')
     return
@@ -176,7 +175,7 @@ module.exports = (robot) ->
       msg.send 'No, because there aren\'t any.'
     else
       standupsText = [ 'Here\'s the standups for every room:' ].concat(_.map(standups, (standup) ->
-        'Room: ' + standup.room + ', Time: ' + standup.time
+        'Room: ' + standup.room + ', Time: ' + standup.time + (if standup.utc then ' UTC+'+ standup.utc else '') + ', Location: '+ standup.location
       ))
       msg.send standupsText.join('\n')
     return
@@ -210,8 +209,8 @@ module.exports = (robot) ->
 
     switch action
       when 'create' then saveStandup room, dayOfWeek, time, utcOffset, location, msg
-      when 'list', 'show' then listStandupsForRoom room, msg
-      when 'list all', 'show all' then listStandupsForAllRooms msg
+      when 'list' then listStandupsForRoom room, msg
+      when 'list all' then listStandupsForAllRooms msg
       when 'delete' then clearSpecificStandupForRoom room, time, msg
       when 'delete all' then clearAllStandupsForRoom room, msg
       else sendHelp msg
