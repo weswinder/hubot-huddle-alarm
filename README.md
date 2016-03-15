@@ -17,6 +17,8 @@ You can create as many standups as you like, across as many rooms as you like.
 
 `hubot create standup hh:mm` - Creates a standup at hh:mm (UTC) every weekday for this room
 
+`hubot create standup hh:mm at room/url` - Creates a standup at hh:mm (UTC) every weekday for this chat room with a reminder for a physical room or url
+
 `hubot create standup hh:mm UTC+2` - As above, with a shift to account for UTC offset
 
 `hubot list standups` - See all standups for this room

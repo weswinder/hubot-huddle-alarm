@@ -11,6 +11,7 @@
 # Commands:
 #   hubot standup help - See a help document explaining how to use.
 #   hubot create standup hh:mm - Creates a standup at hh:mm every weekday for this room
+#   hubot create standup hh:mm at room/url - Creates a standup at hh:mm (UTC) every weekday for this chat room with a reminder for a physical room or url
 #   hubot create standup hh:mm UTC+2 - Creates a standup at hh:mm every weekday for this room (relative to UTC)
 #   hubot list standups - See all standups for this room
 #   hubot list standups in every room - See all standups in every room
@@ -221,6 +222,7 @@ module.exports = (robot) ->
     message.push 'Use me to create a standup, and then I\'ll post in this room every weekday at the time you specify. Here\'s how:'
     message.push ''
     message.push robot.name + ' create standup hh:mm - I\'ll remind you to standup in this room at hh:mm every weekday.'
+    message.push robot.name + ' create standup hh:mm at room/url - Creates a standup at hh:mm (UTC) every weekday for this chat room with a reminder for a physical room or url'
     message.push robot.name + ' create standup hh:mm UTC+2 - I\'ll remind you to standup in this room at hh:mm every weekday.'
     message.push robot.name + ' list standups - See all standups for this room.'
     message.push robot.name + ' list standups in every room - Be nosey and see when other rooms have their standup.'
