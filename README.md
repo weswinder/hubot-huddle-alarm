@@ -17,13 +17,15 @@ You can create as many standups as you like, across as many rooms as you like.
 
 `hubot create standup hh:mm` - Creates a standup at hh:mm (UTC) every weekday for this room
 
+`hubot create standup hh:mm by the water cooler` - Creates a standup at hh:mm (UTC) every weekday for this room, specifying a location ('by the water cooler')
+
 `hubot create standup hh:mm UTC+2` - As above, with a shift to account for UTC offset
 
 `hubot create standup Monday@hh:mm` - Creates a standup at hh:mm (UTC) every Monday for this room
 
 `hubot list standups` - See all standups for this room
 
-`hubot list standups in every room` - See all standups in every room
+`hubot list all standups` - See all standups in every room
 
 `hubot delete hh:mm standup` - If you have a standup at hh:mm, deletes it
 
@@ -34,6 +36,9 @@ You can create as many standups as you like, across as many rooms as you like.
 ## Environment Variables
 
 You can set ```HUBOT_STANDUP_PREPEND``` to define a string that will be prepended to the alert messages Hubot sends. Typically, you'd use this to trigger an alert to everybody, for example, *@here* will alert everybody active in a Hipchat room, and *@all* does the same for Flowdock.
+
+```HUBOT_STANDUP_WEEKDAYS``` allows you to customize the days the standup check fires on. It defaults to `1-5` (Monday-Friday). Setting this to
+`0-4` will check for standup Sunday-Thursday. The syntax is the day of week specifier in the Linux cron format.
 
 ## Local Time
 
