@@ -45,8 +45,8 @@ module.exports = (robot) ->
     standupDate.setUTCHours(standupHours + utcOffset)
 
     result = (standupDate.getUTCHours() == now.getUTCHours()) and
-    (standupDate.getUTCMinutes() == now.getUTCMinutes()) and
-    (standupDayOfWeek == -1 or (standupDayOfWeek == standupDate.getDay() == now.getUTCDay()))
+      (standupDate.getUTCMinutes() == now.getUTCMinutes()) and
+      (standupDayOfWeek == -1 or (standupDayOfWeek == standupDate.getDay() == now.getUTCDay()))
 
     if result then true else false
 
