@@ -50,6 +50,7 @@ module.exports = (robot) ->
     if result then true else false
 
   # Returns the number of a day of the week from a supplied string. Will only attempt to match the first 3 characters
+  # Sat/Sun currently aren't supported by the cron but are included to ensure indexes are correct
   getDayOfWeek = (day) ->
     if (!day)
       return -1
@@ -88,8 +89,17 @@ module.exports = (robot) ->
       room = msg.envelope.user.reply_to
     room
 
+  # Confirm a time is in the valid 00:00 format
+  timeIsValid = (time) ->
+    validateTimePattern = /([01]?[0-9]|2[0-4]):[0-5]?[0-9]/
+    return validateTimePattern.test time
+
   # Stores a standup in the brain.
   saveStandup = (room, dayOfWeek, time, utcOffset, location, msg) ->
+    if !timeIsValid time
+      msg.send "Sorry, but I couldn't find a time to create the standup at."
+      return
+
     standups = getStandups()
     newStandup =
       room: room
@@ -119,6 +129,10 @@ module.exports = (robot) ->
 
   # Remove specific standups for a room
   clearSpecificStandupForRoom = (room, time, msg) ->
+    if !timeIsValid time
+      msg.send "Sorry, but I couldn't spot a time in your command."
+      return
+
     standups = getStandups()
     standupsToKeep = _.reject(standups,
       room: room
@@ -195,9 +209,8 @@ module.exports = (robot) ->
     PREPEND_MESSAGE += ' '
 
   # Check for standups that need to be fired, once a minute
-  # Defaults to Monday to Friday.
-  WEEKDAYS_CRON = process.env.HUBOT_STANDUP_WEEKDAYS or '1-5'
-  new cronJob('1 * * * * '+ WEEKDAYS_CRON, checkStandups, null, true)
+  # Monday to Friday.
+  new cronJob('1 * * * * 1-5', checkStandups, null, true)
 
   # Global regex should match all possible options
   robot.respond /(.*)standups? ?(?:([A-z]*)\s?\@\s?)?((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])?(?: UTC([- +]\d\d?))?(.*)/i, (msg) ->
