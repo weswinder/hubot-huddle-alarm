@@ -90,8 +90,17 @@ module.exports = (robot) ->
       room = msg.envelope.user.reply_to
     room
 
+  # Confirm a time is in the valid 00:00 format
+  timeIsValid = (time) ->
+    validateTimePattern = /([01]?[0-9]|2[0-4]):[0-5]?[0-9]/
+    return validateTimePattern.test time
+
   # Stores a standup in the brain.
   saveStandup = (room, dayOfWeek, time, utcOffset, location, msg) ->
+    if !timeIsValid time
+      msg.send "Sorry, but I couldn't find a time to create the standup at."
+      return
+
     standups = getStandups()
     newStandup =
       room: room
@@ -121,6 +130,10 @@ module.exports = (robot) ->
 
   # Remove specific standups for a room
   clearSpecificStandupForRoom = (room, time, msg) ->
+    if !timeIsValid time
+      msg.send "Sorry, but I couldn't spot a time in your command."
+      return
+
     standups = getStandups()
     standupsToKeep = _.reject(standups,
       room: room
