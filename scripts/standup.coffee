@@ -215,7 +215,7 @@ module.exports = (robot) ->
   new cronJob('1 * * * * 1-5', checkStandups, null, true)
 
   # Global regex should match all possible options
-  robot.respond /(.*)standups? ?(?:([A-z]*)\s?\@\s?)?((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])?(?: UTC([- +]\d\d?))?(.*)/i, (msg) ->
+  robot.respond /(.*?)standups? ?(?:([A-z]*)\s?\@\s?)?((?:[01]?[0-9]|2[0-4]):[0-5]?[0-9])?(?: UTC([- +]\d\d?))?(.*)/i, (msg) ->
     action = msg.match[1].trim().toLowerCase()
     dayOfWeek = msg.match[2]
     time = msg.match[3]
